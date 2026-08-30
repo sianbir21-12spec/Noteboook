@@ -1,0 +1,65 @@
+:root {
+  /* Paper & ink palette */
+  --paper: #faf6ec;
+  --paper-line: #d8cfb8;
+  --margin-red: #c65d4f;
+  --ink: #2b2620;
+  --ink-soft: #6b6252;
+  --pencil-blue: #4a6fa5;
+  --highlight: #f2d478;
+  --online: #5a8f5e;
+
+  /* Type */
+  --font-display: 'Caveat', cursive;
+  --font-body: 'Nunito', sans-serif;
+
+  --radius: 10px;
+  --shadow-tape: 0 1px 2px rgba(43, 38, 32, 0.15);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  background-image:
+    linear-gradient(var(--paper-line) 1px, transparent 1px);
+  background-size: 100% 32px;
+  background-position: 0 96px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea {
+  font-family: var(--font-body);
+}
+
+a { color: var(--pencil-blue); }
+
+::selection {
+  background: var(--highlight);
+}
+
+*:focus-visible {
+  outline: 3px solid var(--pencil-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--margin-red);
+}

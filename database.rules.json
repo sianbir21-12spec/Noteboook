@@ -4,7 +4,7 @@
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        ".validate": "!newData.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true || ((!data.exists() || newData.child('isAdmin').val() === data.child('isAdmin').val()) && (!data.exists() || newData.child('banned').val() === data.child('banned').val()))"
+        ".validate": "!newData.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('isAdmin').val() !== true && newData.child('banned').val() !== true) || (data.exists() && newData.child('isAdmin').val() === data.child('isAdmin').val() && newData.child('banned').val() === data.child('banned').val())"
       }
     },
     "status": {

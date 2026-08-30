@@ -26,7 +26,7 @@ function getAuthErrorMessage(err) {
 }
 
 export function Login() {
-  const { signInGoogle, signInGithub, signInEmail, createEmailAccount } = useAuth()
+  const { signInGoogle, signInEmail, createEmailAccount } = useAuth()
   const [mode, setMode] = useState('signin')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -164,9 +164,6 @@ export function Login() {
 
         <button onClick={() => handleOAuthSignIn(signInGoogle)} style={oauthButtonStyle('#fff', 'var(--ink)')}>
           Continue with Google
-        </button>
-        <button onClick={() => handleOAuthSignIn(signInGithub)} style={oauthButtonStyle('#24292e', '#fff')}>
-          Continue with GitHub
         </button>
       </div>
     </div>

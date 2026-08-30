@@ -11,7 +11,7 @@ import { TypingIndicator } from '../components/TypingIndicator'
 import { UserAvatar } from '../components/UserAvatar'
 import { NotificationPrompt } from '../components/NotificationPrompt'
 
-export function Chat() {
+export function Chat({ onOpenAdmin }) {
   const { user } = useAuth()
   const [activeThread, setActiveThread] = useState({ type: 'room', id: 'general', label: 'general' })
   const { permission, requestPermission } = useNotificationPermission()
@@ -68,7 +68,7 @@ export function Chat() {
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <Sidebar activeThread={activeThread} onSelectRoom={handleSelectRoom} onSelectDM={handleSelectDM} />
+      <Sidebar activeThread={activeThread} onSelectRoom={handleSelectRoom} onSelectDM={handleSelectDM} onOpenAdmin={onOpenAdmin} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <NotificationPrompt permission={permission} onRequest={requestPermission} />

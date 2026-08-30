@@ -9,8 +9,8 @@ function dmIdFor(uidA, uidB) {
   return [uidA, uidB].sort().join('_')
 }
 
-export function Sidebar({ activeThread, onSelectRoom, onSelectDM }) {
-  const { user, signOut } = useAuth()
+export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin }) {
+  const { user, signOut, isAdmin } = useAuth()
   const [rooms, setRooms] = useState({})
   const [newRoomName, setNewRoomName] = useState('')
   const users = useUsers()
@@ -126,6 +126,24 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM }) {
             {user.displayName}
           </div>
         </div>
+        {isAdmin && (
+          <button
+            onClick={onOpenAdmin}
+            title="Admin panel"
+            style={{
+              border: 'none',
+              background: 'var(--pencil-blue)',
+              color: '#fff',
+              borderRadius: 8,
+              padding: '8px 16px',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Admin
+          </button>
+        )}
         <button
           onClick={signOut}
           title="Sign out"

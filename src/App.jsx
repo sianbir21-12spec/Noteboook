@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Login } from './pages/Login'
 import { Chat } from './pages/Chat'
+import { Admin } from './pages/Admin'
+import { Banned } from './pages/Banned'
 import './styles/global.css'
 
 function Gate() {
-  const { user, loading } = useAuth()
+  const { user, loading, isAdmin, isBanned } = useAuth()
+  const [view, setView] = useState('chat') // 'chat' | 'admin'
 
   if (loading) {
     return (
@@ -14,7 +18,15 @@ function Gate() {
     )
   }
 
-  return user ? <Chat /> : <Login />
+  if (!user) return <Login />
+
+  if (isBanned) return <Banned />
+
+  if (view === 'admin' && isAdmin) {
+    return <Admin onBack={() => setView('chat')} />
+  }
+
+  return <Chat onOpenAdmin={isAdmin ? () => setView('admin') : null} />
 }
 
 export default function App() {

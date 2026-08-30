@@ -7,14 +7,24 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth'
-import { ref, onDisconnect, onValue, set, serverTimestamp } from 'firebase/database'
+import { ref, onDisconnect, onValue, set, update, remove, serverTimestamp } from 'firebase/database'
 import { auth, db, googleProvider, githubProvider } from '../firebase'
 
 const AuthContext = createContext(null)
 
+const getAdminEmailList = () => {
+  const envList = import.meta.env.VITE_ADMIN_EMAILS || ''
+  return envList
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isBanned, setIsBanned] = useState(false)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
@@ -24,21 +34,52 @@ export function AuthProvider({ children }) {
     return unsub
   }, [])
 
-  // Write profile + wire up presence whenever a user logs in
+  // Write profile, check admin & ban status, and wire up presence
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      setIsAdmin(false)
+      setIsBanned(false)
+      return
+    }
+
+    const adminEmails = getAdminEmailList()
+    const isEmailAdmin = user.email ? adminEmails.includes(user.email.toLowerCase()) : false
 
     const profileRef = ref(db, `users/${user.uid}`)
-    set(profileRef, {
-      displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
-      photoURL: user.photoURL || '',
-      email: user.email || '',
+
+    // Listen to user profile for real-time ban and admin changes
+    const userUnsub = onValue(profileRef, (snap) => {
+      const data = snap.val() || {}
+      setIsBanned(Boolean(data.banned))
+
+      const dbAdmin = Boolean(data.isAdmin)
+      const currentAdminStatus = isEmailAdmin || dbAdmin
+      setIsAdmin(currentAdminStatus)
+
+      // Ensure profile fields are synced
+      const updates = {}
+      if (!data.displayName || data.displayName !== (user.displayName || user.email?.split('@')[0])) {
+        updates.displayName = user.displayName || user.email?.split('@')[0] || 'Anonymous'
+      }
+      if (user.email && data.email !== user.email) {
+        updates.email = user.email
+      }
+      if (data.photoURL !== (user.photoURL || '')) {
+        updates.photoURL = user.photoURL || ''
+      }
+      if (isEmailAdmin && !data.isAdmin) {
+        updates.isAdmin = true
+      }
+
+      if (Object.keys(updates).length > 0) {
+        update(profileRef, updates).catch(() => {})
+      }
     })
 
     const statusRef = ref(db, `status/${user.uid}`)
     const connectedRef = ref(db, '.info/connected')
 
-    const unsub = onValue(connectedRef, (snap) => {
+    const connectedUnsub = onValue(connectedRef, (snap) => {
       if (snap.val() === false) return
       onDisconnect(statusRef)
         .set({ state: 'offline', lastSeen: serverTimestamp() })
@@ -47,7 +88,10 @@ export function AuthProvider({ children }) {
         })
     })
 
-    return unsub
+    return () => {
+      userUnsub()
+      connectedUnsub()
+    }
   }, [user])
 
   const signInGoogle = () => signInWithPopup(auth, googleProvider)
@@ -63,16 +107,35 @@ export function AuthProvider({ children }) {
   }
   const signOut = () => firebaseSignOut(auth)
 
+  // Admin actions
+  const setUserBanned = (uid, banned) => {
+    return update(ref(db, `users/${uid}`), { banned })
+  }
+
+  const setUserAdmin = (uid, makeAdmin) => {
+    return update(ref(db, `users/${uid}`), { isAdmin: makeAdmin })
+  }
+
+  const deleteUserData = async (uid) => {
+    await remove(ref(db, `users/${uid}`))
+    await remove(ref(db, `status/${uid}`))
+  }
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
+        isAdmin,
+        isBanned,
         signInGoogle,
         signInGithub,
         signInEmail,
         createEmailAccount,
         signOut,
+        setUserBanned,
+        setUserAdmin,
+        deleteUserData,
       }}
     >
       {children}

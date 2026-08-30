@@ -2,11 +2,11 @@
 
 A real-time chat app with group rooms and direct messages, built for you and your people.
 
-**Stack:** React (Vite) · Firebase Auth (Google/GitHub OAuth) · Firebase Realtime Database · Firebase Storage · Express (production server)
+**Stack:** React (Vite) · Firebase Auth (Email/Password + Google OAuth) · Firebase Realtime Database · Firebase Storage · Express (production server)
 
 ## Features
 
-- Google + GitHub sign-in
+- Email/password + Google sign-in
 - Group chat rooms (create your own) and 1:1 direct messages
 - Typing indicators
 - Online presence + read receipts ("Seen")
@@ -17,8 +17,7 @@ A real-time chat app with group rooms and direct messages, built for you and you
 ## 1. Firebase project setup
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project**.
-2. **Authentication** → Sign-in method → enable **Google** and **GitHub**.
-   - For GitHub, you'll need a GitHub OAuth App (create one at github.com/settings/developers) and paste its Client ID/Secret into Firebase's GitHub provider settings. Use the callback URL Firebase gives you.
+2. **Authentication** → Sign-in method → enable **Email/Password** and **Google**.
 3. **Realtime Database** → Create database → start in **locked mode** → then paste the contents of `database.rules.json` (in this repo) into the Rules tab and publish.
 4. **Storage** → Get started (used for file/image uploads). Default rules are fine for MVP but restrict to authenticated users:
    ```

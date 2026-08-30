@@ -56,7 +56,31 @@ npm run build      # outputs to dist/
 npm run server     # serves dist/ via Express on PORT (default 8080)
 ```
 
-## 5. Deploying to a Cloud VM
+## 5. Docker
+
+Vite reads `VITE_*` values at build time, so pass Firebase config as build args:
+
+```bash
+docker build -t notebook-chat \
+  --build-arg VITE_FIREBASE_API_KEY="$VITE_FIREBASE_API_KEY" \
+  --build-arg VITE_FIREBASE_AUTH_DOMAIN="$VITE_FIREBASE_AUTH_DOMAIN" \
+  --build-arg VITE_FIREBASE_DATABASE_URL="$VITE_FIREBASE_DATABASE_URL" \
+  --build-arg VITE_FIREBASE_PROJECT_ID="$VITE_FIREBASE_PROJECT_ID" \
+  --build-arg VITE_FIREBASE_STORAGE_BUCKET="$VITE_FIREBASE_STORAGE_BUCKET" \
+  --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="$VITE_FIREBASE_MESSAGING_SENDER_ID" \
+  --build-arg VITE_FIREBASE_APP_ID="$VITE_FIREBASE_APP_ID" \
+  .
+```
+
+Run the container:
+
+```bash
+docker run --rm -p 8080:8080 notebook-chat
+```
+
+Visit `http://localhost:8080`.
+
+## 6. Deploying to a Cloud VM
 
 These steps work the same on an AWS EC2, GCP Compute Engine, or Azure VM instance (Ubuntu).
 

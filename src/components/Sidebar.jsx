@@ -25,8 +25,21 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM }) {
     e.preventDefault()
     const name = newRoomName.trim()
     if (!name) return
-    const id = name.toLowerCase().replace(/\s+/g, '-')
-    set(ref(db, `rooms/${id}`), { name, createdBy: user.uid })
+
+    const id = name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[.$#[\]/]/g, '') // strip characters Firebase RTDB keys can't contain
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    if (!id) {
+      alert('Room name must contain at least one letter or number.')
+      return
+    }
+
+    set(ref(db, `rooms/${id}/name`), name)
+    set(ref(db, `rooms/${id}/createdBy`), user.uid)
     setNewRoomName('')
     onSelectRoom(id)
   }

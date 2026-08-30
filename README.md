@@ -2,11 +2,11 @@
 
 A real-time chat app with group rooms and direct messages, built for you and your people.
 
-**Stack:** React (Vite) · Firebase Auth (Email/Password + Google OAuth) · Firebase Realtime Database · Firebase Storage · Express (production server)
+**Stack:** React (Vite) · Firebase Auth (Google/GitHub OAuth) · Firebase Realtime Database · Firebase Storage · Express (production server)
 
 ## Features
 
-- Email/password + Google sign-in
+- Google + GitHub sign-in
 - Group chat rooms (create your own) and 1:1 direct messages
 - Typing indicators
 - Online presence + read receipts ("Seen")
@@ -17,7 +17,8 @@ A real-time chat app with group rooms and direct messages, built for you and you
 ## 1. Firebase project setup
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project**.
-2. **Authentication** → Sign-in method → enable **Email/Password** and **Google**.
+2. **Authentication** → Sign-in method → enable **Google** and **GitHub**.
+   - For GitHub, you'll need a GitHub OAuth App (create one at github.com/settings/developers) and paste its Client ID/Secret into Firebase's GitHub provider settings. Use the callback URL Firebase gives you.
 3. **Realtime Database** → Create database → start in **locked mode** → then paste the contents of `database.rules.json` (in this repo) into the Rules tab and publish.
 4. **Storage** → Get started (used for file/image uploads). Default rules are fine for MVP but restrict to authenticated users:
    ```
@@ -56,31 +57,7 @@ npm run build      # outputs to dist/
 npm run server     # serves dist/ via Express on PORT (default 8080)
 ```
 
-## 5. Docker
-
-Vite reads `VITE_*` values at build time, so pass Firebase config as build args:
-
-```bash
-docker build -t notebook-chat \
-  --build-arg VITE_FIREBASE_API_KEY="$VITE_FIREBASE_API_KEY" \
-  --build-arg VITE_FIREBASE_AUTH_DOMAIN="$VITE_FIREBASE_AUTH_DOMAIN" \
-  --build-arg VITE_FIREBASE_DATABASE_URL="$VITE_FIREBASE_DATABASE_URL" \
-  --build-arg VITE_FIREBASE_PROJECT_ID="$VITE_FIREBASE_PROJECT_ID" \
-  --build-arg VITE_FIREBASE_STORAGE_BUCKET="$VITE_FIREBASE_STORAGE_BUCKET" \
-  --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="$VITE_FIREBASE_MESSAGING_SENDER_ID" \
-  --build-arg VITE_FIREBASE_APP_ID="$VITE_FIREBASE_APP_ID" \
-  .
-```
-
-Run the container:
-
-```bash
-docker run --rm -p 8080:8080 notebook-chat
-```
-
-Visit `http://localhost:8080`.
-
-## 6. Deploying to a Cloud VM
+## 5. Deploying to a Cloud VM
 
 These steps work the same on an AWS EC2, GCP Compute Engine, or Azure VM instance (Ubuntu).
 

@@ -1,16 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useMessages } from '../hooks/useMessages'
 import { useTyping } from '../hooks/useTyping'
+import { useNotificationPermission } from '../hooks/useNotificationPermission'
+import { useGlobalMessageNotifications } from '../hooks/useGlobalMessageNotifications'
 import { Sidebar } from '../components/Sidebar'
 import { MessageList } from '../components/MessageList'
 import { MessageInput } from '../components/MessageInput'
 import { TypingIndicator } from '../components/TypingIndicator'
 import { UserAvatar } from '../components/UserAvatar'
+import { NotificationPrompt } from '../components/NotificationPrompt'
 
 export function Chat() {
   const { user } = useAuth()
   const [activeThread, setActiveThread] = useState({ type: 'room', id: 'general', label: 'general' })
+  const { permission, requestPermission } = useNotificationPermission()
+
+  const activeThreadKey = activeThread ? `${activeThread.type}:${activeThread.id}` : null
+  useGlobalMessageNotifications({ user, activeThreadKey, permission })
 
   const threadPath = useMemo(() => {
     if (!activeThread) return null
@@ -28,6 +35,11 @@ export function Chat() {
 
   const { messages, sendMessage, markSeen } = useMessages(threadPath)
   const { typingUsers, setTyping } = useTyping(typingPath, user)
+
+  const handleSeen = useCallback(
+    (id) => markSeen(id, user.uid),
+    [markSeen, user.uid]
+  )
 
   const handleSelectRoom = (id) => {
     setActiveThread({ type: 'room', id, label: `# ${id}` })
@@ -49,8 +61,8 @@ export function Chat() {
       fileURL,
       fileName,
       uid: user.uid,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
+      displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+      photoURL: user.photoURL || '',
     })
   }
 
@@ -59,6 +71,7 @@ export function Chat() {
       <Sidebar activeThread={activeThread} onSelectRoom={handleSelectRoom} onSelectDM={handleSelectDM} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <NotificationPrompt permission={permission} onRequest={requestPermission} />
         <header
           style={{
             padding: '16px 24px',
@@ -85,7 +98,7 @@ export function Chat() {
         <MessageList
           messages={messages}
           currentUser={user}
-          onSeen={(id) => markSeen(id, user.uid)}
+          onSeen={handleSeen}
           threadMemberCount={activeThread.type === 'dm' ? 2 : undefined}
         />
 

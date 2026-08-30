@@ -14,9 +14,15 @@
     },
     "rooms": {
       ".read": "auth != null",
-      ".write": "auth != null",
       "$roomId": {
+        "name": {
+          ".write": "auth != null && (!data.exists() || data.val() === newData.val())"
+        },
+        "createdBy": {
+          ".write": "auth != null && !data.exists()"
+        },
         "messages": {
+          ".write": "auth != null",
           "$messageId": {
             ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || newData.child('seenBy').exists())"
           }

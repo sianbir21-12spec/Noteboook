@@ -19,7 +19,10 @@ export function useTyping(typingPath, user) {
         .map(([uid, data]) => data.displayName || 'Someone')
       setTypingUsers(others)
     })
-    return unsub
+    return () => {
+      unsub()
+      clearTimeout(timeoutRef.current)
+    }
   }, [typingPath, user])
 
   const setTyping = (isTyping) => {

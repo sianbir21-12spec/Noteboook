@@ -1,15 +1,19 @@
+import { useState } from 'react'
 import { usePresence } from '../hooks/usePresence'
 
 export function UserAvatar({ photoURL, displayName, uid, showStatus = false, size = 36 }) {
   const { isOnline } = usePresence()
+  const [imgFailed, setImgFailed] = useState(false)
   const initials = (displayName || '?').slice(0, 1).toUpperCase()
+  const showImage = photoURL && !imgFailed
 
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      {photoURL ? (
+      {showImage ? (
         <img
           src={photoURL}
           alt={displayName}
+          onError={() => setImgFailed(true)}
           style={{
             width: size,
             height: size,

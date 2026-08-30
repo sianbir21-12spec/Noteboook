@@ -13,9 +13,13 @@ function isImage(name = '') {
 
 export function MessageList({ messages, currentUser, onSeen, threadMemberCount = 2 }) {
   const bottomRef = useRef(null)
+  const lastCountRef = useRef(0)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length !== lastCountRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      lastCountRef.current = messages.length
+    }
     // Mark the latest messages as seen
     messages.slice(-10).forEach((m) => {
       if (!m.seenBy?.[currentUser?.uid]) {

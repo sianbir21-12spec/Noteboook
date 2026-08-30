@@ -20,6 +20,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'))
 })
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Notebook server running on port ${PORT}`)
 })
+
+function shutdown(signal) {
+  console.log(`Received ${signal}, shutting down`)
+  server.close(() => {
+    process.exit(0)
+  })
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))

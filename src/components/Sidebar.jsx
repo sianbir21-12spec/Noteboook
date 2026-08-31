@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ref, onValue, push, set } from 'firebase/database'
+import { ref, onValue, set } from 'firebase/database'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useUsers } from '../hooks/usePresence'
@@ -13,6 +13,7 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
   const { user, signOut, isAdmin } = useAuth()
   const [rooms, setRooms] = useState({})
   const [newRoomName, setNewRoomName] = useState('')
+  const [creatingRoom, setCreatingRoom] = useState(false)
   const users = useUsers()
 
   useEffect(() => {
@@ -21,15 +22,15 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
     return unsub
   }, [])
 
-  const createRoom = (e) => {
+  const createRoom = async (e) => {
     e.preventDefault()
     const name = newRoomName.trim()
-    if (!name) return
+    if (!name || creatingRoom) return
 
     const id = name
       .toLowerCase()
       .replace(/\s+/g, '-')
-      .replace(/[.$#[\]/]/g, '') // strip characters Firebase RTDB keys can't contain
+      .replace(/[.$#[\]/]/g, '')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
 
@@ -38,10 +39,25 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
       return
     }
 
-    set(ref(db, `rooms/${id}/name`), name)
-    set(ref(db, `rooms/${id}/createdBy`), user.uid)
-    setNewRoomName('')
-    onSelectRoom(id)
+    if (rooms[id]) {
+      alert('A room with that name already exists.')
+      onSelectRoom(id)
+      return
+    }
+
+    setCreatingRoom(true)
+    try {
+      // Create the room atomically. This is required by the Firebase rules:
+      // a new room must contain both name and createdBy in the same write.
+      await set(ref(db, `rooms/${id}`), { name, createdBy: user.uid })
+      setNewRoomName('')
+      onSelectRoom(id)
+    } catch (error) {
+      console.error('Failed to create room:', error)
+      alert('Could not create the room. Please try again.')
+    } finally {
+      setCreatingRoom(false)
+    }
   }
 
   const otherUsers = Object.entries(users).filter(([uid]) => uid !== user.uid)
@@ -69,7 +85,7 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
             onClick={() => onSelectRoom(id)}
             style={rowStyle(activeThread?.type === 'room' && activeThread?.id === id)}
           >
-            # {room.name}
+            # {room.name || id}
           </button>
         ))}
         <form onSubmit={createRoom} style={{ display: 'flex', gap: 6, margin: '8px 4px' }}>
@@ -77,6 +93,8 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
             value={newRoomName}
             onChange={(e) => setNewRoomName(e.target.value)}
             placeholder="new room…"
+            disabled={creatingRoom}
+            maxLength={80}
             style={{
               flex: 1,
               fontSize: 13,
@@ -85,7 +103,9 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
               border: '1px solid var(--paper-line)',
             }}
           />
-          <button type="submit" style={{ border: 'none', background: 'none', cursor: 'pointer' }}>➕</button>
+          <button type="submit" disabled={creatingRoom} style={{ border: 'none', background: 'none', cursor: creatingRoom ? 'wait' : 'pointer' }}>
+            {creatingRoom ? '⏳' : '➕'}
+          </button>
         </form>
 
         <SectionLabel>Direct messages</SectionLabel>
@@ -101,7 +121,7 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
             }}
           >
             <UserAvatar photoURL={u.photoURL} displayName={u.displayName} uid={uid} showStatus size={22} />
-            {u.displayName}
+            {u.displayName || 'Anonymous'}
           </button>
         ))}
         {otherUsers.length === 0 && (

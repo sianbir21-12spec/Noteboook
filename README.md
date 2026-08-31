@@ -11,6 +11,8 @@ A real-time chat app with group rooms and direct messages, built for you and you
 - Typing indicators
 - Online presence + read receipts ("Seen")
 - Image/file uploads in messages
+- Admin dashboard with user moderation, role management, room management, message moderation, search, and live statistics
+- Firebase rules enforce admin actions server-side instead of trusting client-side environment variables
 
 ---
 
@@ -41,6 +43,18 @@ Copy `.env.example` to `.env` and fill in the values from step 1.5:
 cp .env.example .env
 ```
 
+`VITE_ADMIN_EMAILS` is no longer used for authorization. Admin privileges are stored in the Realtime Database and enforced by Firebase Rules so a browser cannot grant itself admin access.
+
+### Grant the first admin
+
+For the first administrator, sign in normally, then in **Firebase Console → Realtime Database → Data**, find that user's UID under `users` and set:
+
+```json
+"isAdmin": true
+```
+
+After that, the admin can grant/revoke admin access from the Admin Panel. Do not allow users to edit `isAdmin` or `banned` themselves; the included rules enforce this.
+
 ## 3. Local development
 
 ```bash
@@ -48,7 +62,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173`. Open it in two browser profiles (or one normal + one incognito) to test DMs, typing indicators, and presence between two accounts.
+Visit `http://localhost:5173`. Open it in two browser profiles (or one normal + one incognito) to test DMs, typing indicators, presence, and moderation.
 
 ## 4. Production build
 
@@ -85,7 +99,9 @@ These steps work the same on an AWS EC2, GCP Compute Engine, or Azure VM instanc
 6. **(Optional) Put Nginx in front** for TLS via Let's Encrypt/Certbot if you want `https://`.
 7. Add your VM's domain/IP to **Firebase Auth → Settings → Authorized domains**, or OAuth sign-in will fail.
 
-That's it — visiting the VM's IP or domain should show the Notebook login screen.
+## That's it
+
+Visiting the VM's IP or domain should show the Notebook login screen.
 
 ## Project structure
 
@@ -94,7 +110,7 @@ src/
   components/   UI pieces (MessageList, MessageInput, Sidebar, UserAvatar, TypingIndicator)
   contexts/     AuthContext (OAuth + presence wiring)
   hooks/        useMessages, useTyping, usePresence, useFileUpload
-  pages/        Login, Chat
+  pages/        Login, Chat, Admin, Banned
   firebase.js   Firebase app initialization (reads from .env)
 server/
   index.js      Express server serving the production build

@@ -3,7 +3,8 @@
     "users": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".validate": "!newData.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('isAdmin').val() !== true && newData.child('banned').val() !== true) || (data.exists() && newData.child('isAdmin').val() === data.child('isAdmin').val() && newData.child('banned').val() === data.child('banned').val())"
       }
     },
     "status": {
@@ -17,15 +18,17 @@
       "$roomId": {
         ".write": "auth != null || root.child('users').child(auth.uid).child('isAdmin').val() === true",
         "name": {
-          ".write": "auth != null && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+          ".write": "auth != null && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
         },
         "createdBy": {
-          ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+          ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+          ".validate": "newData.isString()"
         },
         "messages": {
           ".write": "auth != null || root.child('users').child(auth.uid).child('isAdmin').val() === true",
           "$messageId": {
-            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || newData.child('seenBy').exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+            ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid) || (data.exists() && newData.child('uid').val() === data.child('uid').val() && newData.child('text').val() === data.child('text').val() && newData.child('fileURL').val() === data.child('fileURL').val() && newData.child('fileName').val() === data.child('fileName').val() && newData.child('displayName').val() === data.child('displayName').val() && newData.child('photoURL').val() === data.child('photoURL').val()))"
           }
         },
         "typing": {

@@ -3,28 +3,29 @@
     "users": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "status": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "rooms": {
       ".read": "auth != null",
       "$roomId": {
+        ".write": "auth != null || root.child('users').child(auth.uid).child('isAdmin').val() === true",
         "name": {
-          ".write": "auth != null && (!data.exists() || data.val() === newData.val())"
+          ".write": "auth != null && (!data.exists() || data.val() === newData.val() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
         },
         "createdBy": {
-          ".write": "auth != null && !data.exists()"
+          ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
         },
         "messages": {
-          ".write": "auth != null",
+          ".write": "auth != null || root.child('users').child(auth.uid).child('isAdmin').val() === true",
           "$messageId": {
-            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || newData.child('seenBy').exists())"
+            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || newData.child('seenBy').exists() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
           }
         },
         "typing": {
@@ -36,8 +37,8 @@
     },
     "dms": {
       "$dmId": {
-        ".read": "auth != null && $dmId.contains(auth.uid)",
-        ".write": "auth != null && $dmId.contains(auth.uid)",
+        ".read": "auth != null && ($dmId.contains(auth.uid) || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && ($dmId.contains(auth.uid) || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "typing": {
           "$uid": {
             ".write": "auth != null && auth.uid === $uid"

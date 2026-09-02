@@ -1,6 +1,7 @@
 :root {
-  /* Paper & ink palette */
+  /* Paper & ink palette - light mode */
   --paper: #faf6ec;
+  --paper-2: #f3ede0;
   --paper-line: #d8cfb8;
   --margin-red: #c65d4f;
   --ink: #2b2620;
@@ -15,6 +16,21 @@
 
   --radius: 10px;
   --shadow-tape: 0 1px 2px rgba(43, 38, 32, 0.15);
+}
+
+[data-theme="dark"] {
+  /* Paper & ink palette - dark mode */
+  --paper: #1e1a17;
+  --paper-2: #2a2520;
+  --paper-line: #3d362f;
+  --margin-red: #d4736a;
+  --ink: #e8e0d5;
+  --ink-soft: #9b9080;
+  --pencil-blue: #7aa3d0;
+  --highlight: #c9a83a;
+  --online: #6aaf6e;
+
+  --shadow-tape: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 * { box-sizing: border-box; }

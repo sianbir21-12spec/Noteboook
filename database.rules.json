@@ -38,6 +38,15 @@
         }
       }
     },
+    "admin": {
+      "activity": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "auth != null",
+        "$id": {
+          ".validate": "newData.hasChildren(['type', 'timestamp'])"
+        }
+      }
+    },
     "dms": {
       "$dmId": {
         ".read": "auth != null && ($dmId.contains(auth.uid) || root.child('users').child(auth.uid).child('isAdmin').val() === true)",

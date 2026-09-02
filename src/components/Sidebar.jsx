@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ref, onValue, set } from 'firebase/database'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { useUsers } from '../hooks/usePresence'
+import { useUsers, useUserStatus } from '../hooks/usePresence'
 import { UserAvatar } from './UserAvatar'
 
 function dmIdFor(uidA, uidB) {
@@ -14,7 +14,9 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
   const [rooms, setRooms] = useState({})
   const [newRoomName, setNewRoomName] = useState('')
   const [creatingRoom, setCreatingRoom] = useState(false)
+  const [statusOpen, setStatusOpen] = useState(false)
   const users = useUsers()
+  const { status: myStatus, setStatus } = useUserStatus()
 
   useEffect(() => {
     const roomsRef = ref(db, 'rooms')
@@ -138,12 +140,59 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
           display: 'flex',
           alignItems: 'center',
           gap: 10,
+          position: 'relative',
         }}
       >
-        <UserAvatar photoURL={user.photoURL} displayName={user.displayName} uid={user.uid} showStatus />
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setStatusOpen((v) => !v)}
+            title="Set status"
+            style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            <UserAvatar photoURL={user.photoURL} displayName={user.displayName} uid={user.uid} showStatus userStatus={myStatus} />
+          </button>
+          {statusOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 8px)',
+                left: 0,
+                background: '#fff',
+                border: '1px solid var(--paper-line)',
+                borderRadius: 8,
+                boxShadow: 'var(--shadow-tape)',
+                padding: 4,
+                zIndex: 10,
+                minWidth: 160,
+              }}
+            >
+              <StatusOption
+                label="Online"
+                color="var(--online)"
+                current={myStatus === 'online'}
+                onSelect={() => { setStatus('online'); setStatusOpen(false) }}
+              />
+              <StatusOption
+                label="Away"
+                color="#f0c040"
+                current={myStatus === 'away'}
+                onSelect={() => { setStatus('away'); setStatusOpen(false) }}
+              />
+              <StatusOption
+                label="Do not disturb"
+                color="var(--margin-red)"
+                current={myStatus === 'dnd'}
+                onSelect={() => { setStatus('dnd'); setStatusOpen(false) }}
+              />
+            </div>
+          )}
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {user.displayName}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--ink-soft)', textTransform: 'capitalize' }}>
+            {myStatus === 'dnd' ? 'Do not disturb' : myStatus}
           </div>
         </div>
         {isAdmin && (
@@ -190,6 +239,42 @@ function SectionLabel({ children }) {
     >
       {children}
     </div>
+  )
+}
+
+function StatusOption({ label, color, current, onSelect }) {
+  return (
+    <button
+      onClick={onSelect}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        width: '100%',
+        textAlign: 'left',
+        background: current ? '#f5f0e6' : 'transparent',
+        border: 'none',
+        borderRadius: 6,
+        padding: '6px 8px',
+        fontSize: 13,
+        cursor: 'pointer',
+        color: 'var(--ink)',
+        marginBottom: 2,
+        fontWeight: current ? 600 : 400,
+      }}
+    >
+      <span
+        style={{
+          width: 10,
+          height: 10,
+          borderRadius: '50%',
+          background: color,
+          display: 'inline-block',
+          flexShrink: 0,
+        }}
+      />
+      {label}
+    </button>
   )
 }
 

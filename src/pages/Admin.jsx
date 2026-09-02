@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { ref, onValue, remove } from 'firebase/database'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
+import { subscribeActivityLogs } from '../hooks/useActivityLogs'
 import { UserAvatar } from '../components/UserAvatar'
 
-const TABS = ['Overview', 'Users', 'Rooms', 'Messages']
+const TABS = ['Overview', 'Users', 'Rooms', 'Messages', 'Activity Logs']
 
 export function Admin({ onBack }) {
   const { user, isAdmin, setUserBanned, setUserAdmin, deleteUserData } = useAuth()
@@ -17,12 +18,14 @@ export function Admin({ onBack }) {
   const [confirm, setConfirm] = useState(null) // { type, uid, name }
   const [toast, setToast] = useState('')
   const [loadingRoomId, setLoadingRoomId] = useState(null)
+  const [activityEvents, setActivityEvents] = useState([])
 
   useEffect(() => {
     const unsubs = [
       onValue(ref(db, 'users'), (s) => setUsers(s.val() || {})),
       onValue(ref(db, 'status'), (s) => setStatus(s.val() || {})),
       onValue(ref(db, 'rooms'), (s) => setRooms(s.val() || {})),
+      subscribeActivityLogs(setActivityEvents),
     ]
     return () => unsubs.forEach((u) => u())
   }, [])
@@ -355,6 +358,48 @@ export function Admin({ onBack }) {
             })}
           </div>
         )}
+
+        {/* ── ACTIVITY LOGS ── */}
+        {activeTab === 'Activity Logs' && (
+          <div>
+            <SectionTitle>📜 Activity Logs (last 50)</SectionTitle>
+            {activityEvents.length === 0 ? (
+              <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>No activity yet.</p>
+            ) : (
+              <table style={tableStyle}>
+                <thead>
+                  <tr>
+                    {['Type', 'Actor', 'Target', 'Details', 'Time'].map((h) => <Th key={h}>{h}</Th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityEvents.map((evt) => {
+                    const meta = EVENT_META[evt.type] || { label: evt.type, icon: '•', color: 'var(--ink-soft)' }
+                    return (
+                      <tr key={evt.id}>
+                        <Td>
+                          <Tag color={meta.color}>{meta.icon} {meta.label}</Tag>
+                        </Td>
+                        <Td style={{ fontSize: 13 }}>
+                          {evt.actorName || evt.actorId || '—'}
+                        </Td>
+                        <Td style={{ fontSize: 13 }}>
+                          {evt.targetName || evt.targetId || '—'}
+                        </Td>
+                        <Td style={{ fontSize: 13, color: 'var(--ink-soft)' }}>
+                          {evt.roomName || evt.roomId || ''}
+                        </Td>
+                        <Td style={{ fontSize: 12, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>
+                          {evt.timestamp ? new Date(evt.timestamp).toLocaleString() : '—'}
+                        </Td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Confirm Dialog */}
@@ -415,6 +460,19 @@ export function Admin({ onBack }) {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+const EVENT_META = {
+  join:            { label: 'User Joined',        icon: '🎉', color: 'var(--pencil-blue)' },
+  leave:           { label: 'User Left',          icon: '👋', color: 'var(--ink-soft)' },
+  ban:             { label: 'User Banned',        icon: '🚫', color: 'var(--margin-red)' },
+  unban:           { label: 'User Unbanned',      icon: '✅', color: '#4a7a4a' },
+  message_sent:    { label: 'Message Sent',       icon: '✉️', color: 'var(--pencil-blue)' },
+  message_deleted: { label: 'Message Deleted',   icon: '🗑️', color: 'var(--margin-red)' },
+  room_created:    { label: 'Room Created',       icon: '💬', color: 'var(--pencil-blue)' },
+  room_deleted:    { label: 'Room Deleted',       icon: '🗑️', color: 'var(--margin-red)' },
+  admin_granted:   { label: 'Admin Granted',      icon: '🛡️', color: 'var(--pencil-blue)' },
+  admin_revoked:   { label: 'Admin Revoked',      icon: '👤', color: 'var(--margin-red)' },
+}
 
 const CONFIRM_COPY = {
   ban: {

@@ -1,11 +1,24 @@
 import { useState } from 'react'
-import { usePresence } from '../hooks/usePresence'
+import { usePresence, useUserStatus } from '../hooks/usePresence'
 
-export function UserAvatar({ photoURL, displayName, uid, showStatus = false, size = 36 }) {
+const STATUS_COLORS = {
+  online: 'var(--online)',  // green
+  away: '#f0c040',           // yellow
+  dnd: 'var(--margin-red)',  // red
+}
+
+export function UserAvatar({ photoURL, displayName, uid, showStatus = false, size = 36, userStatus }) {
   const { isOnline } = usePresence()
+  const { status: selfStatus } = useUserStatus()
   const [imgFailed, setImgFailed] = useState(false)
   const initials = (displayName || '?').slice(0, 1).toUpperCase()
   const showImage = photoURL && !imgFailed
+
+  const resolvedStatus = userStatus ?? (uid ? selfStatus : null)
+  const indicatorColor = resolvedStatus && STATUS_COLORS[resolvedStatus]
+    ? STATUS_COLORS[resolvedStatus]
+    : (isOnline(uid) ? 'var(--online)' : '#b8ae98')
+  const statusLabel = resolvedStatus || (isOnline(uid) ? 'Online' : 'Offline')
 
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
@@ -44,7 +57,7 @@ export function UserAvatar({ photoURL, displayName, uid, showStatus = false, siz
       )}
       {showStatus && uid && (
         <span
-          title={isOnline(uid) ? 'Online' : 'Offline'}
+          title={statusLabel}
           style={{
             position: 'absolute',
             bottom: -1,
@@ -52,7 +65,7 @@ export function UserAvatar({ photoURL, displayName, uid, showStatus = false, siz
             width: size * 0.3,
             height: size * 0.3,
             borderRadius: '50%',
-            background: isOnline(uid) ? 'var(--online)' : '#b8ae98',
+            background: indicatorColor,
             border: '2px solid var(--paper)',
           }}
         />

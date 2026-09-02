@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { ref, onDisconnect, onValue, set, update, remove, serverTimestamp } from 'firebase/database'
 import { auth, db, googleProvider, githubProvider } from '../firebase'
+import { logActivity } from '../hooks/useActivityLogs'
 
 const AuthContext = createContext(null)
 
@@ -90,14 +91,35 @@ export function AuthProvider({ children }) {
   const signOut = () => firebaseSignOut(auth)
 
   // Admin actions. Firebase RTDB rules are the final authorization layer.
-  const setUserBanned = (uid, banned) => update(ref(db, `users/${uid}`), { banned })
-  const setUserAdmin = (uid, makeAdmin) => update(ref(db, `users/${uid}`), { isAdmin: makeAdmin })
+  const setUserBanned = (uid, banned) => {
+    logActivity(banned ? 'ban' : 'unban', { actorId: user?.uid, actorName: user?.displayName, targetId: uid })
+    return update(ref(db, `users/${uid}`), { banned })
+  }
+  const setUserAdmin = (uid, makeAdmin) => {
+    logActivity(makeAdmin ? 'admin_granted' : 'admin_revoked', { actorId: user?.uid, actorName: user?.displayName, targetId: uid })
+    return update(ref(db, `users/${uid}`), { isAdmin: makeAdmin })
+  }
+
+  // Set the current user's custom presence status (online/away/dnd).
+  // Stored at users/{uid}/status so it survives the connection-managed
+  // presence at status/{uid} and can be read by other users.
+  const setUserStatus = (newStatus) => {
+    if (!user) return Promise.resolve()
+    if (!['online', 'away', 'dnd'].includes(newStatus)) return Promise.resolve()
+    return set(ref(db, `users/${user.uid}/status`), newStatus).catch((error) => {
+      console.warn('Status update failed:', error)
+    })
+  }
 
   const deleteUserData = async (uid) => {
     await Promise.all([
       remove(ref(db, `users/${uid}`)),
       remove(ref(db, `status/${uid}`)),
     ])
+  }
+
+  const deleteAllRoomMessages = async (roomId) => {
+    await remove(ref(db, `rooms/${roomId}/messages`))
   }
 
   return (
@@ -114,7 +136,9 @@ export function AuthProvider({ children }) {
         signOut,
         setUserBanned,
         setUserAdmin,
+        setUserStatus,
         deleteUserData,
+        deleteAllRoomMessages,
       }}
     >
       {children}

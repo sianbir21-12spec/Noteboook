@@ -26,7 +26,6 @@ export function useFileUpload() {
   const currentTaskRef = useRef(null)
   const currentFileRef = useRef(null)
 
-  // Cleanup on unmount - cancel upload if in progress
   useEffect(() => {
     return () => {
       if (currentTaskRef.current) {
@@ -46,7 +45,6 @@ export function useFileUpload() {
     if (file.size > MAX_FILE_SIZE) {
       return `File too large. Max size: ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
     }
-    // Allow files with no MIME type or known MIME types
     if (file.type && !ALLOWED_TYPES.includes(file.type)) {
       return `File type "${file.type || 'unknown'}" not allowed.`
     }
@@ -85,7 +83,6 @@ export function useFileUpload() {
       setProgress(0)
       currentFileRef.current = file
 
-      // Sanitize file name
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
       const timestamp = Date.now()
       const path = `uploads/${threadId}/${timestamp}_${sanitizedName}`
@@ -108,7 +105,6 @@ export function useFileUpload() {
           setUploading(false)
           setProgress(0)
 
-          // Better error messages
           let errorMsg = 'Upload failed.'
           if (err.code === 'storage/canceled') {
             errorMsg = 'Upload cancelled.'

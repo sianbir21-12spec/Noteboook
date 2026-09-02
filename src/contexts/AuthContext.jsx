@@ -70,8 +70,8 @@ export function AuthProvider({ children }) {
     })
 
     return () => {
-      userUnsub()
-      connectedUnsub()
+      try { userUnsub() } catch (e) {}
+      try { connectedUnsub() } catch (e) {}
     }
   }, [user])
 

@@ -66,7 +66,6 @@ export function MessageInput({ onSend, onEdit, onTyping, threadId, editingMessag
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!text.trim()) return
-    if (uploading) return
 
     // Handle edit submission
     if (editingMessage) {
@@ -178,7 +177,7 @@ export function MessageInput({ onSend, onEdit, onTyping, threadId, editingMessag
           border: 'none',
           background: 'transparent',
           fontSize: 22,
-          cursor: uploading || remaining === 0 ? 'not-allowed' : 'pointer',
+          cursor: remaining === 0 ? 'not-allowed' : 'pointer',
           padding: 6,
           opacity: 1,
         }}
@@ -190,7 +189,7 @@ export function MessageInput({ onSend, onEdit, onTyping, threadId, editingMessag
         value={text}
         onChange={handleChange}
         onBlur={() => onTyping?.(false)}
-        placeholder={uploading ? `Uploading… ${progress}%` : 'Write something…'}
+        placeholder={'Write something…'}
         style={{
           flex: 1,
           padding: '10px 16px',

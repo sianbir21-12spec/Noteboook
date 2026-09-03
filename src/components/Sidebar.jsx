@@ -9,8 +9,9 @@ function dmIdFor(uidA, uidB) {
   return [uidA, uidB].sort().join('_')
 }
 
-export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin }) {
+export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin, isOpen, onClose }) {
   const { user, signOut, isAdmin } = useAuth()
+  const [collapsed, setCollapsed] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
   const [rooms, setRooms] = useState({})
   const [newRoomName, setNewRoomName] = useState('')
   const [creatingRoom, setCreatingRoom] = useState(false)
@@ -66,17 +67,34 @@ export function Sidebar({ activeThread, onSelectRoom, onSelectDM, onOpenAdmin })
 
   return (
     <aside
+      className="sidebar"
       style={{
-        width: 260,
+        width: collapsed ? 60 : 260,
         background: '#f2ecdb',
         borderRight: '1px solid var(--paper-line)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
+        transition: 'width 0.25s ease',
       }}
     >
-      <div style={{ padding: '20px 18px 10px' }}>
-        <div className="app-title" style={{ fontSize: 30, lineHeight: 1 }}>Notebook</div>
+      <button
+        onClick={() => setCollapsed(c => !c)}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        style={{
+          alignSelf: 'flex-end',
+          margin: '10px 10px 0 0',
+          border: 'none',
+          background: 'none',
+          cursor: 'pointer',
+          fontSize: 18,
+          lineHeight: 1,
+        }}
+      >
+        {collapsed ? '>' : '<'}
+      </button>
+      <div style={{ padding: collapsed ? '10px 8px' : '20px 18px 10px', overflow: 'hidden' }}>
+        <div className="app-title" style={{ fontSize: 30, lineHeight: 1, whiteSpace: 'nowrap' }}>Notebook</div>
       </div>
 
       <div style={{ padding: '0 14px', flex: 1, overflowY: 'auto' }}>

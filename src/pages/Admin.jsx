@@ -160,6 +160,16 @@ export function Admin({ onBack }) {
               <StatCard label="Admins" value={adminCount} icon="🛡️" />
             </div>
 
+            {/* Bar chart section */}
+            <SectionTitle>📈 Distribution</SectionTitle>
+            <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid var(--paper-line)', boxShadow: 'var(--shadow-tape)', marginBottom: 32 }}>
+              <StatBar label="Users" value={userList.length} max={userList.length} color="var(--pencil-blue)" />
+              <StatBar label="Online" value={onlineCount} max={userList.length} color="#4a7a4a" />
+              <StatBar label="Messages" value={totalMessages} max={Math.max(totalMessages, 1)} color="var(--margin-red)" />
+              <StatBar label="Rooms" value={Object.keys(rooms).length} max={Math.max(Object.keys(rooms).length, 1)} color="#8a6a3a" />
+              <StatBar label="Banned" value={bannedCount} max={userList.length} color="#c0392b" />
+            </div>
+
             <SectionTitle>🕐 Recent Users</SectionTitle>
             <table style={tableStyle}>
               <thead>
@@ -532,6 +542,29 @@ function StatCard({ label, value, icon }) {
         {value}
       </div>
       <div style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{label}</div>
+    </div>
+  )
+}
+
+function StatBar({ label, value, max, color }) {
+  const percentage = max > 0 ? Math.min(100, (value / max) * 100) : 0
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ fontSize: 14, color: 'var(--ink)' }}>{label}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{value}</span>
+      </div>
+      <div style={{ background: '#f5f2eb', borderRadius: 8, height: 12, border: '1px solid var(--paper-line)' }}>
+        <div
+          style={{
+            width: `${percentage}%`,
+            height: '100%',
+            background: color,
+            borderRadius: 8,
+            transition: 'width 0.3s ease',
+          }}
+        />
+      </div>
     </div>
   )
 }

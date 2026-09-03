@@ -1,13 +1,18 @@
 import { useEffect, useState, useRef } from 'react'
 import { ref, onValue, set, onDisconnect, remove } from 'firebase/database'
 import { db } from '../firebase'
+import { usePresence } from './usePresence'
 
 /**
  * typingPath e.g. `rooms/general/typing` or `dms/{dmId}/typing`
  */
 export function useTyping(typingPath, user) {
   const [typingUsers, setTypingUsers] = useState([])
+  const { status, isOnline } = usePresence()
   const timeoutRef = useRef(null)
+
+  // Derive the count of online users (state === 'online') from shared presence data.
+  const onlineCount = Object.values(status).filter((s) => s?.state === 'online').length
 
   useEffect(() => {
     if (!typingPath) return
@@ -39,5 +44,5 @@ export function useTyping(typingPath, user) {
     }
   }
 
-  return { typingUsers, setTyping }
+  return { typingUsers, setTyping, onlineCount, isOnline }
 }

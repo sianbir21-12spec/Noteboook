@@ -40,7 +40,7 @@ export function Chat({ onOpenAdmin }) {
   }, [activeThread])
 
   const { messages, sendMessage, editMessage, markSeen } = useMessages(threadPath, filterEnabled)
-  const { typingUsers, setTyping } = useTyping(typingPath, user)
+  const { typingUsers, setTyping, onlineCount } = useTyping(typingPath, user)
 
   const handleSeen = useCallback(
     (id) => markSeen(id, user.uid),
@@ -153,7 +153,7 @@ export function Chat({ onOpenAdmin }) {
           onReply={handleReply}
         />
 
-        <TypingIndicator typingUsers={typingUsers} />
+        <TypingIndicator typingUsers={typingUsers} onlineCount={onlineCount} />
 
         <MessageInput onSend={handleSend} onEdit={handleEditMessage} onTyping={setTyping} threadId={activeThread.id} editingMessage={editingMessage} replyingTo={replyingTo} onCancelReply={handleCancelReply} />
       </main>

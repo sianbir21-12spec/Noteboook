@@ -1,6 +1,7 @@
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import adminRouter from './routes/admin.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -9,8 +10,13 @@ const PORT = process.env.PORT || 8080
 const distPath = path.join(__dirname, '..', 'dist')
 app.use(express.static(distPath))
 
-// Placeholder for future admin/moderation API routes that need to run
-// server-side (e.g. with the Firebase Admin SDK) rather than client-side.
+// Parse JSON bodies
+app.use(express.json())
+
+// Mount admin routes (with basic auth inside the router)
+app.use('/api', adminRouter)
+
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })

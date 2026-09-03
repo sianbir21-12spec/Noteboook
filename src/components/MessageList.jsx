@@ -121,9 +121,9 @@ function ReactionBadge({ messageId, reactions, uid, addReaction, removeReaction 
   const handleToggle = (emoji) => {
     const userReacted = reactions?.[emoji]?.[uid]
     if (userReacted) {
-      removeReaction?.(messageId, emoji, uid) || removeReaction?.(messageId, emoji)
+      removeReaction?.(messageId, emoji)
     } else {
-      addReaction?.(messageId, emoji, uid) || addReaction?.(messageId, emoji)
+      addReaction?.(messageId, emoji)
     }
   }
 

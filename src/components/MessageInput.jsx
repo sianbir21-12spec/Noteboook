@@ -168,23 +168,6 @@ export function MessageInput({ onSend, onEdit, onTyping, threadId, editingMessag
           </button>
         </div>
       )}
-      <button
-        type="button"
-        onClick={() => {}}
-        disabled={remaining === 0}
-        title="File upload disabled"
-        style={{
-          border: 'none',
-          background: 'transparent',
-          fontSize: 22,
-          cursor: remaining === 0 ? 'not-allowed' : 'pointer',
-          padding: 6,
-          opacity: 1,
-        }}
-      >
-        📎
-      </button>
-
       <input
         value={text}
         onChange={handleChange}

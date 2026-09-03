@@ -39,7 +39,16 @@ export function Chat({ onOpenAdmin }) {
       : `dms/${activeThread.id}/typing`
   }, [activeThread])
 
-  const { messages, sendMessage, editMessage, markSeen } = useMessages(threadPath, filterEnabled)
+  const { messages, sendMessage, editMessage, markSeen, addReaction, removeReaction } = useMessages(threadPath, filterEnabled)
+
+  const handleAddReaction = useCallback(
+    (messageId, emoji) => addReaction(messageId, emoji, user.uid),
+    [addReaction, user.uid]
+  )
+  const handleRemoveReaction = useCallback(
+    (messageId, emoji) => removeReaction(messageId, emoji, user.uid),
+    [removeReaction, user.uid]
+  )
   const { typingUsers, setTyping, onlineCount } = useTyping(typingPath, user)
 
   const handleSeen = useCallback(
@@ -151,6 +160,8 @@ export function Chat({ onOpenAdmin }) {
           threadMemberCount={activeThread.type === 'dm' ? 2 : undefined}
           onEdit={handleStartEdit}
           onReply={handleReply}
+          addReaction={handleAddReaction}
+          removeReaction={handleRemoveReaction}
         />
 
         <TypingIndicator typingUsers={typingUsers} onlineCount={onlineCount} />

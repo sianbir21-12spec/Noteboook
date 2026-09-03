@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ref, push, query, orderByChild, onValue, serverTimestamp, update } from 'firebase/database'
+import { ref, push, query, orderByChild, onValue, serverTimestamp, update, set, remove } from 'firebase/database'
 import { db } from '../firebase'
 import { sanitizeMessage } from '../utils/profanity'
 
@@ -47,5 +47,15 @@ export function useMessages(threadPath, filterEnabled = false) {
     update(ref(db, `${threadPath}/${messageId}/seenBy`), { [uid]: true })
   }
 
-  return { messages, sendMessage, markSeen, editMessage }
+  const addReaction = (messageId, emoji, uid) => {
+    if (!threadPath || !messageId || !emoji || !uid) return
+    set(ref(db, `${threadPath}/${messageId}/reactions/${emoji}/${uid}`), true)
+  }
+
+  const removeReaction = (messageId, emoji, uid) => {
+    if (!threadPath || !messageId || !emoji || !uid) return
+    remove(ref(db, `${threadPath}/${messageId}/reactions/${emoji}/${uid}`))
+  }
+
+  return { messages, sendMessage, markSeen, editMessage, addReaction, removeReaction }
 }

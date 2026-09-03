@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { UserAvatar } from './UserAvatar'
 
+const EDIT_WINDOW_MS = 5 * 60 * 1000
+
+function canEdit(message, currentUser) {
+  if (!message || !currentUser) return false
+  if (message.uid !== currentUser.uid) return false
+  if (message.editedAt) return false
+  const createdAt = message.createdAt
+  if (!createdAt) return false
+  const created = typeof createdAt === 'number' ? createdAt : new Date(createdAt).getTime()
+  if (Number.isNaN(created)) return false
+  return Date.now() - created <= EDIT_WINDOW_MS
+}
 
 function formatTime(ts) {
   if (!ts) return ''

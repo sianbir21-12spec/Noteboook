@@ -39,9 +39,11 @@
       }
     },
     "admin": {
+      ".read": "auth != null",
       "activity": {
+        ".indexOn": ["timestamp", "type"],
         ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-        ".write": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
         "$id": {
           ".validate": "newData.hasChildren(['type', 'timestamp'])"
         }
